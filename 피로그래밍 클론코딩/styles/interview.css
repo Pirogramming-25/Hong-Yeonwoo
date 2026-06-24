@@ -1,0 +1,252 @@
+body{
+    background:#000;
+}
+
+.header,
+.main{
+    width:90%;
+    max-width:1200px;
+    margin:0 auto;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.header h1 img{
+    width:80px;
+}
+
+.header .menu{
+    display:flex;
+    gap:28px;
+}
+
+.header .menu a{
+    color:#fff;
+    font-size:1.2rem;
+    transition: 0.1s;
+    font-weight: 500;
+}
+.header .menu a:hover {
+    transform: translateY(-2px);
+}
+
+.header .menu a:nth-child(4){
+    color:#00ff66;
+}
+
+.main{
+    margin-top:30px;
+}
+
+.year{
+    position:relative;
+    margin-bottom:30px;
+}
+
+.year h2{
+    color:#fff;
+    text-align:center;
+    font-size:1.8rem;
+}
+
+.year a{
+    color:#fff;
+    position:absolute;
+    right:0;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+/* ==================== */
+.main .interview_list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+.main .interview_list .card {
+    background: #333;
+    border-radius: 10px;
+    padding: 20px;
+    position:relative; transition:0.3s;
+    min-height:150px;  min-width:300px;
+
+}
+
+.main .interview_list .card:hover {
+    transform: translateY(-4px);
+}
+
+.main .interview_list .card .top {
+    display: flex; align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+
+/* 사진만들기 */
+.main .interview_list .card .top .photo {
+    width:70px;
+    height:70px;
+
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+}
+.main .interview_list .card .top .photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.3s;
+}
+.main .interview_list .card:hover .top .photo img{
+    transform: scale(1.1);
+}
+
+.main .interview_list .card .top .person {}
+.main .interview_list .card .top .person h3 {
+    color:#fff;
+    font-size: 1.3rem;
+    font-weight: 400; padding-bottom: 10px;
+}
+.main .interview_list .card .top .person .major {
+    display: block; background-color: #3b71a3;
+    color:#fff; border-radius: 12%;
+    text-align: center; 
+    width: 60px;
+    height: 30px; line-height: 30px;
+}
+
+.main .interview_list .card .top .person .double_major {
+    display: block; background-color: #1b682e;
+    color:#fff; border-radius: 12%;
+    text-align: center; 
+    width: 70px;
+    height: 30px; line-height: 30px;
+}
+
+.main .interview_list .card .top .person .non_major {
+    display: block; background-color: #bd5025;
+    color:#fff; border-radius: 12%;
+    text-align: center; 
+    width: 70px;
+    height: 30px; line-height: 30px;
+}
+
+.main .interview_list .card .comment {
+    color:#fff;
+    font-size: 1.1rem;
+    font-weight: 400; 
+}
+.main .interview_list .card .menu_btn {
+    position:absolute;
+    right:20px;
+    top:20px;
+
+    width:22px;
+    height:18px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+}
+.main .interview_list .card .menu_btn span {
+    display:block;
+    width:100%;
+    height:2px;
+    background:#aaa;
+    transition: 0.3s;
+}
+
+.main .interview_list .card:hover  .menu_btn span:nth-child(1) {transform-origin:left center; transform: scaleX(0.5);}
+.main .interview_list .card:hover .menu_btn span:nth-child(3) {transform-origin:right center; transform: scaleX(0.5);}
+
+@media screen and (max-width: 1200px){
+
+    .main .interview_list{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 680px){
+
+    .main .interview_list{
+        grid-template-columns: 1fr;
+    }
+    .main .interview_list .card{
+        min-width:0;
+    }
+}
+
+footer {background: #333; margin-top: 30px;}
+footer .footer_inner {
+    width: 90%; max-width:1200px;
+    margin:0 auto;
+    padding: 50px 0;
+
+    display: flex;
+    justify-content: space-between;
+}
+footer .footer_inner .left {}
+footer .footer_inner .left .rule {padding-bottom: 20px;}
+footer .footer_inner .left .rule a{
+    color:#fff
+}
+footer .footer_inner .left .sns {
+    color:#fff; padding-bottom: 20px;
+
+}
+
+footer .footer_inner .left .sns a{
+    text-decoration:none;
+}
+
+footer .footer_inner .left .email {}
+footer .footer_inner .left .email a{
+    color:#fff;
+}
+footer .footer_inner .right {
+    display: flex;
+    gap: 20px;
+    margin-top: 40px;
+    margin-right: 100px;
+}
+footer .footer_inner .right a {
+    color:#fff; transition: 0.1s;
+    font-size: 0.9rem;
+}
+footer .footer_inner .right a:hover{
+    transform: translateY(-2px);
+} 
+
+footer .footer_inner .right span{
+    color: #aaa; font-weight: 200;
+}
+footer .copyright {
+    padding: 15px 0;
+    color:#9b9999;
+    background: #1d1d1d;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+@media screen and (max-width: 768px){
+    footer .footer_inner{
+        flex-direction:column;
+        text-align:center;
+        align-items:center;
+        gap:20px;
+    }
+
+    footer .footer_inner .right{
+        display:none;
+    }
+
+    footer .footer_inner .left .sns{
+        justify-content:center;
+    }
+}
