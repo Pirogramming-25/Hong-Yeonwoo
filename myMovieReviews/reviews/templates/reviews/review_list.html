@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>my Movie reviews</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1000px; margin: 40px auto; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
+        h1 { font-size: 24px; }
+        h1 span { color: #599fc7; }
+        a { color: #333; text-decoration: none; }
+        .add-link { font-size: 14px; font-weight: bold; }
+        .review-list { display: flex; gap: 30px; flex-wrap: wrap; margin-top: 30px; }
+        .card { width: 180px; background: #f3f3f3; padding: 20px; border-radius: 4px; }
+        .poster { width: 100%; height: 180px; background: #ddd; margin-bottom: 15px; }
+        .title { font-weight: bold; font-size: 18px; margin-bottom: 12px; }
+        .info { font-size: 13px; color: #555; line-height: 1.8; }
+        .empty { margin-top: 40px; color: #777; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>my <span>Movie</span> reviews</h1>
+        <a href="{% url 'review-create' %}" class="add-link">Add a New review</a>
+    </header>
+
+    <form method="GET">
+    <select name="sort">
+        <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신순</option>
+        <option value="title" {% if sort == 'title' %}selected{% endif %}>제목순</option>
+        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>별점순</option>
+        <option value="running_time" {% if sort == 'running_time' %}selected{% endif %}>러닝타임순</option>
+    </select>
+    <button type="submit">정렬</button>
+</form>
+
+    <div class="review-list">
+        {% for review in reviews %}
+        <div class="card">
+            <div class="poster"></div>
+            <a href="{% url 'review-detail' review.pk %}">
+                <div class="title">{{ review.title }}</div>
+            </a>
+            <div class="info">
+                <div>개봉년도 {{ review.release_year }}년</div>
+                <div>장르 {{ review.genre }}</div>
+                <div>별점 {{ review.rating }}</div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty">아직 등록된 리뷰가 없습니다.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ review.title }}</title>
+    <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 50px auto; }
+        .content { padding: 20px; background: #fafafa; border-radius: 8px; margin: 15px 0; white-space: pre-wrap; }
+        .meta { color: #666; font-size: 14px; line-height: 1.8; }
+        .btn { padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; color: white; display: inline-block; }
+        .btn-edit { background: #2196F3; }
+        .btn-delete { background: #f44336; }
+        .btn-back { background: #666; }
+    </style>
+</head>
+<body>
+    <h1>{{ review.title }}</h1>
+
+    <div class="meta">
+        <p>감독: {{ review.director }}</p>
+        <p>주연: {{ review.actor }}</p>
+        <p>장르: {{ review.genre }}</p>
+        <p>별점: {{ review.rating }}</p>
+        <p>러닝타임: {{ review.running_time_text }}</p>
+        <p>개봉년도: {{ review.release_year }}년</p>
+    </div>
+
+    <div class="content">{{ review.content }}</div>
+
+    <a href="{% url 'review-update' review.pk %}" class="btn btn-edit">수정</a>
+    <a href="{% url 'review-delete' review.pk %}" class="btn btn-delete">삭제</a>
+    <a href="{% url 'review-list' %}" class="btn btn-back">목록으로</a>
+</body>
+</html>
