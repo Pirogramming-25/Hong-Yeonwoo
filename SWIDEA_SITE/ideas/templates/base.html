@@ -1,0 +1,28 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Idea Lab</title>
+    <link rel="stylesheet" href="{% static 'ideas/style.css' %}">
+</head>
+<body>
+    <nav>
+        <a href="{% url 'ideas:idea_list' %}">Idea Lab</a>
+
+        <a href="{% url 'ideas:idea_list' %}">아이디어 관리</a>
+        <a href="{% url 'ideas:idea_create' %}">아이디어 등록</a>
+        <a href="{% url 'ideas:devtool_list' %}">개발툴 관리</a>
+        <a href="{% url 'ideas:devtool_create' %}">개발툴 등록</a>
+    </nav>
+
+    <hr>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
