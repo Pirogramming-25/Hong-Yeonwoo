@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit">저장</button>
+    </form>
+
+    <a href="{% url 'ideas:idea_list' %}">목록</a>
+{% endblock %}

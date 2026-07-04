@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>아이디어 목록</h1>
+
+    <form method="GET">
+        <select name="sort">
+            <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신순</option>
+            <option value="name" {% if sort == 'name' %}selected{% endif %}>이름순</option>
+            <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>등록순</option>
+            <option value="interest" {% if sort == 'interest' %}selected{% endif %}>관심도 높은순</option>
+        </select>
+        <button type="submit">정렬</button>
+    </form>
+
+    <hr>
+
+    {% for idea in page_obj %}
+        <div>
+            <form action="{% url 'ideas:idea_toggle_star' idea.pk %}" method="POST">
+                {% csrf_token %}
+                <button type="submit">
+                    {% if idea.starred %}
+                        ★
+                    {% else %}
+                        ☆
+                    {% endif %}
+                </button>
+            </form>
+
+            {% if idea.image %}
+                <img src="{{ idea.image.url }}" alt="{{ idea.title }}" width="200">
+            {% endif %}
+
+            <h2>
+                <a href="{% url 'ideas:idea_detail' idea.pk %}">
+                    {{ idea.title }}
+                </a>
+            </h2>
+
+            <p>{{ idea.content }}</p>
+            <p>개발툴: {{ idea.devtool.name }}</p>
+            <p>관심도: {{ idea.interest }}</p>
+
+            <form action="{% url 'ideas:idea_interest' idea.pk 'plus' %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'ideas:idea_list' %}">
+                <button type="submit">+</button>
+            </form>
+
+            <form action="{% url 'ideas:idea_interest' idea.pk 'minus' %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'ideas:idea_list' %}">
+                <button type="submit">-</button>
+            </form>
+            <p>찜 여부: {{ idea.starred }}</p>
+            <hr>
+        </div>
+    {% empty %}
+        <p>등록된 아이디어가 없습니다.</p>
+    {% endfor %}
+
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}">이전</a>
+        {% endif %}
+
+        <span>
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&sort={{ sort }}">다음</a>
+        {% endif %}
+    </div>
+{% endblock %}
