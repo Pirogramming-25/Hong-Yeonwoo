@@ -80,11 +80,17 @@
         </section>
 
         <section class="sort-area">
-            <strong>게시글 정렬 기준:</strong>
-            <select>
-                <option>좋아요순</option>
-                <option>최신순</option>
-            </select>
+            <form method="get" action="{% if is_post_search %}{% url 'posts:post_search' %}{% else %}{% url 'posts:feed' %}{% endif %}">
+                {% if is_post_search %}
+                    <input type="hidden" name="q" value="{{ post_query }}">
+                {% endif %}
+                <label for="postSort"><strong>게시글 정렬 기준:</strong></label>
+                <select id="postSort" name="sort" onchange="this.form.submit()">
+                    <option value="latest" {% if current_sort == 'latest' %}selected{% endif %}>최신순</option>
+                    <option value="likes" {% if current_sort == 'likes' %}selected{% endif %}>좋아요순</option>
+                    <option value="name" {% if current_sort == 'name' %}selected{% endif %}>가나다순</option>
+                </select>
+            </form>
         </section>
 
         <section class="posts">

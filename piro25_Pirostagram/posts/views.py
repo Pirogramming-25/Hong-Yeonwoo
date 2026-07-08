@@ -6,21 +6,36 @@ from accounts.models import Follow
 from stories.models import Story
 from .models import Post, Like, Comment
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
 
+def sort_posts(posts, sort):
+    if sort == 'likes':
+        return posts.annotate(like_total=Count('likes')).order_by('-like_total', '-created_at')
+
+    if sort == 'name':
+        return posts.order_by('author__username', '-created_at')
+
+    return posts.order_by('-created_at')
+
+
 @login_required
 def feed(request):
+    sort = request.GET.get('sort', 'latest')
+
     following_users = Follow.objects.filter(
         follower=request.user
     ).values_list('following', flat=True)
 
+    feed_user_ids = list(following_users) + [request.user.id]
+
     posts = Post.objects.filter(
-        author__in=following_users
-    ).order_by('-created_at')
+        author__in=feed_user_ids
+    )
+    posts = sort_posts(posts, sort)
 
     story_user_ids = list(following_users) + [request.user.id]
 
@@ -43,11 +58,13 @@ def feed(request):
         'stories': stories,
         'recommended_users': recommended_users,
         'liked_post_ids': liked_post_ids,
+        'current_sort': sort,
     })
 
 @login_required
 def post_search(request):
     query = request.GET.get('q', '').strip()
+    sort = request.GET.get('sort', 'latest')
 
     following_users = Follow.objects.filter(
         follower=request.user
@@ -58,7 +75,8 @@ def post_search(request):
         posts = Post.objects.filter(
             Q(content__icontains=query) |
             Q(author__username__icontains=query)
-        ).distinct().order_by('-created_at')
+        ).distinct()
+        posts = sort_posts(posts, sort)
 
     story_user_ids = list(following_users) + [request.user.id]
 
@@ -83,6 +101,7 @@ def post_search(request):
         'liked_post_ids': liked_post_ids,
         'post_query': query,
         'is_post_search': True,
+        'current_sort': sort,
     })
 
 @login_required
