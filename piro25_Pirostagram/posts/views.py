@@ -6,6 +6,7 @@ from accounts.models import Follow
 from stories.models import Story
 from .models import Post, Like, Comment
 
+from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
@@ -42,6 +43,46 @@ def feed(request):
         'stories': stories,
         'recommended_users': recommended_users,
         'liked_post_ids': liked_post_ids,
+    })
+
+@login_required
+def post_search(request):
+    query = request.GET.get('q', '').strip()
+
+    following_users = Follow.objects.filter(
+        follower=request.user
+    ).values_list('following', flat=True)
+
+    posts = Post.objects.none()
+    if query:
+        posts = Post.objects.filter(
+            Q(content__icontains=query) |
+            Q(author__username__icontains=query)
+        ).distinct().order_by('-created_at')
+
+    story_user_ids = list(following_users) + [request.user.id]
+
+    stories = Story.objects.filter(
+        author__in=story_user_ids
+    ).order_by('-created_at')
+
+    recommended_users = User.objects.exclude(
+        id=request.user.id
+    ).exclude(
+        id__in=following_users
+    )[:4]
+
+    liked_post_ids = Like.objects.filter(
+        user=request.user
+    ).values_list('post_id', flat=True)
+
+    return render(request, 'posts/feed.html', {
+        'posts': posts,
+        'stories': stories,
+        'recommended_users': recommended_users,
+        'liked_post_ids': liked_post_ids,
+        'post_query': query,
+        'is_post_search': True,
     })
 
 @login_required

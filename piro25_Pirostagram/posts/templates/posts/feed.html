@@ -13,7 +13,7 @@
         <h1 class="logo">Pirostagram</h1>
 
         <nav class="menu">
-            <a href="#" class="menu-item">
+            <a href="/" class="menu-item">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -23,14 +23,14 @@
                 <span>홈</span>
             </a>
 
-            <div class="search-box">
-                <a href="#" class="menu-item">
+            <form class="search-box" action="{% url 'posts:post_search' %}" method="get">
+                <div class="menu-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
                     <span>게시글 검색</span>
-                </a>
-                <input type="text">
-                <button>검색</button>
-            </div>
+                </div>
+                <input type="text" name="q" value="{{ post_query|default:'' }}">
+                <button type="submit">검색</button>
+            </form>
 
             <form class="search-box" action="{% url 'accounts:user_search' %}" method="get">
                 <span>유저 검색</span>
@@ -66,6 +66,7 @@
                 <div class="story-item story-open"
                     data-story-image="{{ story.image.url }}"
                     data-story-author="{{ story.author.username }}"
+                    data-story-profile-url="{% url 'accounts:profile' story.author.username %}"
                     data-story-delete-url="{% url 'stories:delete_story' story.id %}"
                     data-story-is-mine="{% if story.author == request.user %}true{% else %}false{% endif %}">
                     <div class="story-circle">
@@ -171,7 +172,11 @@
                     </form>
                 </article>
             {% empty %}
-                <p class="empty">팔로우한 유저의 게시글이 없습니다.</p>
+                {% if is_post_search %}
+                    <p class="empty">검색 결과가 없습니다.</p>
+                {% else %}
+                    <p class="empty">팔로우한 유저의 게시글이 없습니다.</p>
+                {% endif %}
             {% endfor %}
         </section>
     </main>
@@ -207,8 +212,8 @@
         <button class="story-arrow left" type="button">&lt;</button>
 
         <div class="story-modal-content">
-            <p class="story-modal-author" id="storyAuthor"></p>
             <img id="storyImage" src="" alt="">
+            <a class="story-modal-author" id="storyAuthor" href="#"></a>
         </div>
 
         <form id="storyDeleteForm" method="post" style="display: none;">
@@ -309,30 +314,106 @@ const storyImage = document.getElementById('storyImage');
 const storyAuthor = document.getElementById('storyAuthor');
 const storyClose = document.querySelector('.story-close');
 const storyDeleteForm = document.getElementById('storyDeleteForm');
+const storyPrevButton = document.querySelector('.story-arrow.left');
+const storyNextButton = document.querySelector('.story-arrow.right');
+const storyItems = Array.from(document.querySelectorAll('.story-open'));
+let currentStoryIndex = 0;
+let storyAutoTimer = null;
 
-document.querySelectorAll('.story-open').forEach(function(story) {
+function showStory(index) {
+    if (storyItems.length === 0) {
+        return;
+    }
+
+    currentStoryIndex = (index + storyItems.length) % storyItems.length;
+    const story = storyItems[currentStoryIndex];
+
+    storyImage.src = story.dataset.storyImage;
+    storyAuthor.textContent = story.dataset.storyAuthor;
+    storyAuthor.href = story.dataset.storyProfileUrl;
+    storyDeleteForm.action = story.dataset.storyDeleteUrl;
+
+    if (story.dataset.storyIsMine === 'true') {
+        storyDeleteForm.style.display = 'block';
+    } else {
+        storyDeleteForm.style.display = 'none';
+    }
+}
+
+function startStoryAutoPlay() {
+    stopStoryAutoPlay();
+
+    storyAutoTimer = setInterval(function() {
+        showStory(currentStoryIndex + 1);
+    }, 4000);
+}
+
+function stopStoryAutoPlay() {
+    if (storyAutoTimer) {
+        clearInterval(storyAutoTimer);
+        storyAutoTimer = null;
+    }
+}
+
+function openStory(index) {
+    showStory(index);
+    storyModal.classList.add('active');
+    startStoryAutoPlay();
+}
+
+function closeStory() {
+    storyModal.classList.remove('active');
+    stopStoryAutoPlay();
+}
+
+if (storyItems.length <= 1) {
+    storyPrevButton.style.display = 'none';
+    storyNextButton.style.display = 'none';
+}
+
+storyItems.forEach(function(story, index) {
     story.addEventListener('click', function() {
-        storyImage.src = story.dataset.storyImage;
-        storyAuthor.textContent = story.dataset.storyAuthor;
-
-        storyDeleteForm.action = story.dataset.storyDeleteUrl;
-
-        if (story.dataset.storyIsMine === 'true') {
-            storyDeleteForm.style.display = 'block';
-        } else {
-            storyDeleteForm.style.display = 'none';
-        }
-        storyModal.classList.add('active');
+        openStory(index);
     });
 });
 
 storyClose.addEventListener('click', function() {
-    storyModal.classList.remove('active');
+    closeStory();
 });
 
 storyModal.addEventListener('click', function(event) {
     if (event.target === storyModal) {
-        storyModal.classList.remove('active');
+        closeStory();
+    }
+});
+
+storyPrevButton.addEventListener('click', function() {
+    showStory(currentStoryIndex - 1);
+    startStoryAutoPlay();
+});
+
+storyNextButton.addEventListener('click', function() {
+    showStory(currentStoryIndex + 1);
+    startStoryAutoPlay();
+});
+
+document.addEventListener('keydown', function(event) {
+    if (!storyModal.classList.contains('active')) {
+        return;
+    }
+
+    if (event.key === 'ArrowLeft') {
+        showStory(currentStoryIndex - 1);
+        startStoryAutoPlay();
+    }
+
+    if (event.key === 'ArrowRight') {
+        showStory(currentStoryIndex + 1);
+        startStoryAutoPlay();
+    }
+
+    if (event.key === 'Escape') {
+        closeStory();
     }
 });
 </script>
