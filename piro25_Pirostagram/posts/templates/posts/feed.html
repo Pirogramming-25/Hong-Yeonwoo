@@ -1,0 +1,458 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Pirostagram</title>
+    <link rel="stylesheet" href="{% static 'posts/style.css' %}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h1 class="logo">Pirostagram</h1>
+
+        <nav class="menu">
+            <a href="#" class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
+                    <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                <span>홈</span>
+            </a>
+
+            <div class="search-box">
+                <a href="#" class="menu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+                    <span>게시글 검색</span>
+                </a>
+                <input type="text">
+                <button>검색</button>
+            </div>
+
+            <form class="search-box" action="{% url 'accounts:user_search' %}" method="get">
+                <span>유저 검색</span>
+                <input type="text" name="q">
+                <button type="submit">검색</button>
+            </form>
+
+            <a href="#" class="menu-item post-create-open">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                <span>게시물 만들기</span>
+            </a>
+            <a href="{% url 'accounts:profile' request.user.username %}" class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-icon lucide-user-round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+                <span>프로필</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="feed">
+        <section class="stories">
+            <div class="story-item story-create-open">
+                <div class="story-circle">
+                    <div class="story-image">
+                        {% if request.user.profile.image %}
+                            <img src="{{ request.user.profile.image.url }}" alt="">
+                        {% endif %}
+                    </div>
+                </div>
+                <p>스토리+</p>
+            </div>
+
+            {% for story in stories %}
+                <div class="story-item story-open"
+                    data-story-image="{{ story.image.url }}"
+                    data-story-author="{{ story.author.username }}"
+                    data-story-delete-url="{% url 'stories:delete_story' story.id %}"
+                    data-story-is-mine="{% if story.author == request.user %}true{% else %}false{% endif %}">
+                    <div class="story-circle">
+                        <div class="story-image">
+                            <img src="{{ story.image.url }}" alt="">
+                        </div>
+                    </div>
+                    <p>{{ story.author.username }}</p>
+                </div>
+            {% endfor %}
+        </section>
+
+        <section class="sort-area">
+            <strong>게시글 정렬 기준:</strong>
+            <select>
+                <option>좋아요순</option>
+                <option>최신순</option>
+            </select>
+        </section>
+
+        <section class="posts">
+            {% for post in posts %}
+                <article class="post-card">
+                    <div class="post-header">
+                        {% if post.author.profile.image %}
+                            <img src="{{ post.author.profile.image.url }}" alt="">
+                        {% endif %}
+                        <a href="{% url 'accounts:profile' post.author.username %}">
+                            <strong>{{ post.author.username }}</strong>
+                        </a>
+                    </div>
+
+                    <img class="post-image" src="{{ post.image.url }}" alt="">
+
+                    <div class="post-actions">
+                        <form class="like-form" action="{% url 'posts:toggle_like' post.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="icon-button like-button {% if post.id in liked_post_ids %}liked{% endif %}" type="submit">
+                                <svg class="heart-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
+                                </svg>
+                            </button>
+                        </form>
+
+                        <button class="icon-button" type="button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <p class="like-count">좋아요 <span class="like-count-number">{{ post.likes.count }}</span>개</p>
+                    <p class="caption">
+                        <strong>{{ post.author.username }}</strong>
+                        {{ post.content }}
+                    </p>
+
+                    <div class="comments">
+                        <p class="comment-title">
+                            댓글 <span class="comment-count-number">{{ post.comments.count }}</span>개 모두 보기
+                        </p>
+
+                        <div class="comment-list">
+                            {% for comment in post.comments.all %}
+                                <div class="comment-item">
+                                    <div class="comment-view">
+                                        <p class="comment-text">
+                                            <strong>{{ comment.author.username }}</strong>
+                                            <span>{{ comment.content }}</span>
+                                        </p>
+
+                                        {% if comment.author == request.user %}
+                                            <div class="comment-actions">
+                                                <button type="button" class="comment-edit-toggle">수정</button>
+
+                                                <form action="{% url 'posts:delete_comment' comment.id %}" method="post">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="comment-delete-btn">삭제</button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if comment.author == request.user %}
+                                        <form action="{% url 'posts:edit_comment' comment.id %}" method="post" class="comment-edit-form">
+                                            {% csrf_token %}
+                                            <input type="text" name="content" value="{{ comment.content }}">
+                                            <button type="submit">저장</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <form class="comment-form" action="{% url 'posts:create_comment' post.id %}" method="post">
+                        {% csrf_token %}
+                        <input class="comment-input" type="text" name="content" placeholder="댓글 달기...">
+                    </form>
+                </article>
+            {% empty %}
+                <p class="empty">팔로우한 유저의 게시글이 없습니다.</p>
+            {% endfor %}
+        </section>
+    </main>
+
+    <aside class="right-panel">
+        <div class="current-user">
+            {% if request.user.profile.image %}
+                <img src="{{ request.user.profile.image.url }}" alt="">
+            {% endif %}
+            <strong>{{ request.user.username }}</strong>
+            <a href="#">전환</a>
+        </div>
+
+        <h3>다른 사용자 추천</h3>
+
+        {% for user in recommended_users %}
+            <div class="recommend-user">
+                {% if user.profile.image %}
+                    <img src="{{ user.profile.image.url }}" alt="">
+                {% endif %}
+                <a href="{% url 'accounts:profile' user.username %}">
+                    <strong>{{ user.username }}</strong>
+                </a>
+            </div>
+        {% endfor %}
+    </aside>
+</div>
+
+<div class="story-modal-overlay" id="storyModal">
+    <div class="story-modal">
+        <button class="story-close" type="button">×</button>
+
+        <button class="story-arrow left" type="button">&lt;</button>
+
+        <div class="story-modal-content">
+            <p class="story-modal-author" id="storyAuthor"></p>
+            <img id="storyImage" src="" alt="">
+        </div>
+
+        <form id="storyDeleteForm" method="post" style="display: none;">
+            {% csrf_token %}
+            <button type="submit" class="story-delete-btn">삭제</button>
+        </form>
+
+        <button class="story-arrow right" type="button">&gt;</button>
+    </div>
+</div>
+
+<div class="story-create-overlay" id="storyCreateModal">
+    <div class="story-create-modal">
+        <button class="story-create-close" type="button">×</button>
+
+        <h2>스토리 올리기</h2>
+
+        <form action="{% url 'stories:create_story' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label class="story-upload-box">
+                + 이미지 선택
+                <input type="file" name="image" accept="image/*" required>
+            </label>
+
+            <p id="storyFileName" class="story-file-name">선택된 이미지가 없습니다.</p>
+
+            <div class="story-create-actions">
+                <button type="button" class="story-cancel-btn">취소</button>
+                <button type="submit" class="story-submit-btn">올리기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="post-create-overlay" id="postCreateModal">
+    <div class="post-create-modal">
+        <button class="post-create-close" type="button">×</button>
+
+        <h2>게시글 만들기</h2>
+
+        <form action="{% url 'posts:create_post' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label class="post-upload-box">
+                + 이미지 선택
+                <input type="file" name="image" accept="image/*" required>
+            </label>
+
+            <p id="postFileName" class="post-file-name">선택된 이미지가 없습니다.</p>
+
+            <label class="post-content-label">내용</label>
+            <textarea name="content" placeholder="오늘의 사진을 입력하세요..."></textarea>
+
+            <div class="post-create-actions">
+                <button type="button" class="post-cancel-btn">취소</button>
+                <button type="submit" class="post-submit-btn">작성하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+document.querySelectorAll('.like-form').forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const button = form.querySelector('.like-button');
+        const postCard = form.closest('.post-card');
+        const countNumber = postCard.querySelector('.like-count-number');
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            countNumber.textContent = data.like_count;
+
+            if (data.is_liked) {
+                button.classList.add('liked');
+            } else {
+                button.classList.remove('liked');
+            }
+        });
+    });
+});
+</script>
+
+<script>
+const storyModal = document.getElementById('storyModal');
+const storyImage = document.getElementById('storyImage');
+const storyAuthor = document.getElementById('storyAuthor');
+const storyClose = document.querySelector('.story-close');
+const storyDeleteForm = document.getElementById('storyDeleteForm');
+
+document.querySelectorAll('.story-open').forEach(function(story) {
+    story.addEventListener('click', function() {
+        storyImage.src = story.dataset.storyImage;
+        storyAuthor.textContent = story.dataset.storyAuthor;
+
+        storyDeleteForm.action = story.dataset.storyDeleteUrl;
+
+        if (story.dataset.storyIsMine === 'true') {
+            storyDeleteForm.style.display = 'block';
+        } else {
+            storyDeleteForm.style.display = 'none';
+        }
+        storyModal.classList.add('active');
+    });
+});
+
+storyClose.addEventListener('click', function() {
+    storyModal.classList.remove('active');
+});
+
+storyModal.addEventListener('click', function(event) {
+    if (event.target === storyModal) {
+        storyModal.classList.remove('active');
+    }
+});
+</script>
+
+<script>
+const storyCreateModal = document.getElementById('storyCreateModal');
+const storyCreateOpen = document.querySelector('.story-create-open');
+const storyCreateClose = document.querySelector('.story-create-close');
+const storyCancelBtn = document.querySelector('.story-cancel-btn');
+const storyFileInput = document.querySelector('.story-upload-box input');
+const storyFileName = document.getElementById('storyFileName');
+
+
+storyFileInput.addEventListener('change', function() {
+    if (storyFileInput.files.length > 0) {
+        storyFileName.textContent = storyFileInput.files[0].name;
+    } else {
+        storyFileName.textContent = '선택된 이미지가 없습니다.';
+    }
+});
+
+storyCreateOpen.addEventListener('click', function() {
+    storyCreateModal.classList.add('active');
+});
+
+storyCreateClose.addEventListener('click', function() {
+    storyCreateModal.classList.remove('active');
+});
+
+storyCancelBtn.addEventListener('click', function() {
+    storyCreateModal.classList.remove('active');
+});
+
+storyCreateModal.addEventListener('click', function(event) {
+    if (event.target === storyCreateModal) {
+        storyCreateModal.classList.remove('active');
+    }
+});
+</script>
+
+<script>
+document.querySelectorAll('.comment-form').forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const input = form.querySelector('.comment-input');
+        const content = input.value.trim();
+
+        if (!content) {
+            return;
+        }
+
+        const postCard = form.closest('.post-card');
+        const commentList = postCard.querySelector('.comment-list');
+        const commentCountNumber = postCard.querySelector('.comment-count-number');
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        });
+    });
+});
+</script>
+
+<script>
+document.querySelectorAll('.comment-edit-toggle').forEach(function(button) {
+    button.addEventListener('click', function() {
+        const commentItem = button.closest('.comment-item');
+        const editForm = commentItem.querySelector('.comment-edit-form');
+
+        editForm.classList.toggle('active');
+    });
+});
+</script>
+
+<script>
+const postCreateModal = document.getElementById('postCreateModal');
+const postCreateOpen = document.querySelector('.post-create-open');
+const postCreateClose = document.querySelector('.post-create-close');
+const postCancelBtn = document.querySelector('.post-cancel-btn');
+const postFileInput = document.querySelector('.post-upload-box input');
+const postFileName = document.getElementById('postFileName');
+
+postCreateOpen.addEventListener('click', function(event) {
+    event.preventDefault();
+    postCreateModal.classList.add('active');
+});
+
+postCreateClose.addEventListener('click', function() {
+    postCreateModal.classList.remove('active');
+});
+
+postCancelBtn.addEventListener('click', function() {
+    postCreateModal.classList.remove('active');
+});
+
+postCreateModal.addEventListener('click', function(event) {
+    if (event.target === postCreateModal) {
+        postCreateModal.classList.remove('active');
+    }
+});
+
+postFileInput.addEventListener('change', function() {
+    if (postFileInput.files.length > 0) {
+        postFileName.textContent = postFileInput.files[0].name;
+    } else {
+        postFileName.textContent = '선택된 이미지가 없습니다.';
+    }
+});
+</script>
+
+</body>
+</html>

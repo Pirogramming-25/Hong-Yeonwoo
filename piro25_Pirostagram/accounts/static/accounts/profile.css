@@ -1,0 +1,376 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #111;
+}
+
+a,
+a:visited,
+a:hover,
+a:active {
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-width: 1180px;
+    min-height: 820px;
+    margin: 48px auto;
+    background: #fff;
+}
+
+.sidebar {
+    border-right: 1px solid #ddd;
+    padding: 44px 34px;
+}
+.logo {
+    margin: 0 0 18px;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #2f80ed, #56ccf2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.menu a {
+    color: #111;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.search-box {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 15px;
+}
+
+.search-box input {
+    width: 150px;
+    height: 24px;
+    border: 1px solid #aaa;
+}
+
+.search-box button {
+    width: 44px;
+    height: 22px;
+    border: 1px solid #111;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 12px;
+}
+
+.profile-main {
+    padding: 60px 90px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 70px;
+}
+
+.profile-image-wrap {
+    width: 142px;
+    height: 142px;
+    border: 3px solid #2d8cff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-image-inner {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile-image-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profile-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.profile-title h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.edit-profile-btn,
+.follow-btn {
+    border: none;
+    border-radius: 6px;
+    background: #0b63ff;
+    color: #fff;
+    padding: 8px 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.following-btn {
+    border: none;
+    border-radius: 6px;
+    background: #d8d8d8;
+    color: #111;
+    padding: 8px 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 22px;
+    margin-bottom: 28px;
+    color: #666;
+    font-size: 17px;
+}
+
+.profile-stats strong {
+    color: #111;
+}
+
+.bio {
+    font-size: 17px;
+}
+
+.profile-posts {
+    margin-top: 70px;
+    padding-left: 110px;
+}
+
+.profile-post-card {
+    width: 230px;
+}
+
+.profile-post-card img {
+    width: 230px;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+}
+
+.post-owner-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.post-edit-btn {
+    border: none;
+    border-radius: 4px;
+    background: #0b63ff;
+    color: #fff;
+    padding: 6px 12px;
+}
+
+.post-delete-btn {
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    background: #fff;
+    color: #ef4444;
+    padding: 6px 12px;
+}
+
+.empty-posts {
+    margin-top: 80px;
+    font-size: 30px;
+    line-height: 1.45;
+}
+
+.profile-post-modal-overlay,
+.post-edit-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-post-modal-overlay.active,
+.post-edit-overlay.active {
+    display: flex;
+}
+
+.profile-post-modal {
+    position: relative;
+    width: 430px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px;
+}
+
+.profile-post-close,
+.post-edit-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    border: none;
+    background: none;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+.modal-post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.modal-post-header img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.modal-post-image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+}
+
+.modal-post-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.modal-owner-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+.modal-edit-btn {
+    border: none;
+    border-radius: 4px;
+    background: #0b63ff;
+    color: #fff;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.modal-delete-btn {
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    background: #fff;
+    color: #ef4444;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.modal-comment-input {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #ddd;
+    padding: 0 8px;
+}
+
+.post-edit-modal {
+    position: relative;
+    width: 560px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 36px;
+}
+
+.post-edit-modal h2 {
+    margin: 0 0 24px;
+    font-size: 22px;
+}
+
+.post-edit-upload {
+    height: 140px;
+    border: 1px dashed #aaa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    cursor: pointer;
+}
+
+.post-edit-upload input {
+    display: none;
+}
+
+.post-edit-label {
+    display: block;
+    margin: 18px 0 8px;
+    font-weight: 700;
+}
+
+.post-edit-modal textarea {
+    width: 100%;
+    height: 90px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    resize: none;
+}
+
+.post-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.post-edit-cancel {
+    border: none;
+    border-radius: 4px;
+    background: #ddd;
+    padding: 8px 14px;
+}
+
+.post-edit-submit {
+    border: none;
+    border-radius: 4px;
+    background: #0b63ff;
+    color: #fff;
+    padding: 8px 14px;
+}
+
+.icon-button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.icon-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.modal-like-button.liked .heart-icon {
+    color: #ef4444;
+    fill: #ef4444;
+    stroke: #ef4444;
+}
