@@ -100,7 +100,7 @@ def delete_comment(request, comment_id):
     if comment.author == request.user:
         comment.delete()
 
-    return redirect('posts:feed')
+    return redirect(request.META.get('HTTP_REFERER', 'posts:feed'))
 
 @login_required
 def edit_comment(request, comment_id):
@@ -113,7 +113,7 @@ def edit_comment(request, comment_id):
             comment.content = content
             comment.save()
 
-    return redirect('posts:feed')
+    return redirect(request.META.get('HTTP_REFERER', 'posts:feed'))
 
 @login_required
 def create_post(request):

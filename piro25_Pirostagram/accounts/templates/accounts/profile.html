@@ -87,6 +87,38 @@
                     data-post-delete-url="{% url 'posts:delete_post' post.id %}"
                     data-post-is-mine="{% if post.author == request.user %}true{% else %}false{% endif %}">
                     <img src="{{ post.image.url }}" alt="">
+
+                    <div class="profile-post-comments-template">
+                        {% for comment in post.comments.all %}
+                            <div class="modal-comment-item">
+                                <div class="modal-comment-view">
+                                    <p class="modal-comment-text">
+                                        <strong>{{ comment.author.username }}</strong>
+                                        <span>{{ comment.content }}</span>
+                                    </p>
+
+                                    {% if comment.author == request.user %}
+                                        <div class="modal-comment-actions">
+                                            <button type="button" class="modal-comment-edit-toggle">수정</button>
+
+                                            <form action="{% url 'posts:delete_comment' comment.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="modal-comment-delete-btn">삭제</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if comment.author == request.user %}
+                                    <form action="{% url 'posts:edit_comment' comment.id %}" method="post" class="modal-comment-edit-form">
+                                        {% csrf_token %}
+                                        <input type="text" name="content" value="{{ comment.content }}">
+                                        <button type="submit">저장</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             {% empty %}
                 {% if is_me %}
@@ -147,6 +179,8 @@
         <p><strong id="modalCaptionAuthor"></strong> <span id="modalPostContent"></span></p>
         <p>댓글 <span id="modalCommentCount"></span>개 모두 보기</p>
 
+        <div id="modalCommentList" class="modal-comment-list"></div>
+
         <form id="modalCommentForm" method="post">
             {% csrf_token %}
             <input class="modal-comment-input" type="text" name="content" placeholder="댓글 달기...">
@@ -191,6 +225,7 @@ const modalCaptionAuthor = document.getElementById('modalCaptionAuthor');
 const modalPostContent = document.getElementById('modalPostContent');
 const modalLikeCount = document.getElementById('modalLikeCount');
 const modalCommentCount = document.getElementById('modalCommentCount');
+const modalCommentList = document.getElementById('modalCommentList');
 const modalOwnerActions = document.getElementById('modalOwnerActions');
 const modalDeleteForm = document.getElementById('modalDeleteForm');
 
@@ -214,6 +249,9 @@ document.querySelectorAll('.profile-post-open').forEach(function(card) {
         modalPostContent.textContent = card.dataset.postContent;
         modalLikeCount.textContent = card.dataset.postLikeCount;
         modalCommentCount.textContent = card.dataset.postCommentCount;
+
+        const commentTemplate = card.querySelector('.profile-post-comments-template');
+        modalCommentList.innerHTML = commentTemplate ? commentTemplate.innerHTML : '';
 
         modalDeleteForm.action = card.dataset.postDeleteUrl;
         postEditForm.action = card.dataset.postEditUrl;
@@ -316,6 +354,17 @@ modalCommentForm.addEventListener('submit', function(event) {
             window.location.reload();
         }
     });
+});
+
+modalCommentList.addEventListener('click', function(event) {
+    if (!event.target.classList.contains('modal-comment-edit-toggle')) {
+        return;
+    }
+
+    const commentItem = event.target.closest('.modal-comment-item');
+    const editForm = commentItem.querySelector('.modal-comment-edit-form');
+
+    editForm.classList.toggle('active');
 });
 
 </script>
