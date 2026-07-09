@@ -1,0 +1,78 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>유저 검색</title>
+    <link rel="stylesheet" href="{% static 'accounts/user_search.css' %}">
+</head>
+<body>
+<div class="search-page">
+    <h1 class="logo">Pirostagram</h1>
+
+    <h2>"{{ query }}"로 검색한 결과</h2>
+
+    <div class="user-list">
+        {% for user in users %}
+            <div class="user-card">
+                <a class="user-link" href="{% url 'accounts:profile' user.username %}">
+                    {% if user.profile.image %}
+                        <img src="{{ user.profile.image.url }}" alt="">
+                    {% endif %}
+
+                    <div class="user-info">
+                        <strong>{{ user.username }}</strong>
+                        <span>{{ user.username }}</span>
+                    </div>
+                </a>
+
+                <form class="follow-form" action="{% url 'accounts:toggle_follow' user.username %}" method="post">
+                    {% csrf_token %}
+                    {% if user.id in following_ids %}
+                        <button type="submit" class="following-btn">팔로잉</button>
+                    {% else %}
+                        <button type="submit" class="follow-btn">팔로우</button>
+                    {% endif %}
+                </form>
+            </div>
+        {% empty %}
+            <p class="empty">검색 결과가 없습니다.</p>
+        {% endfor %}
+    </div>
+
+    <a class="back-home" href="/">홈으로 돌아가기</a>
+</div>
+
+<script>
+document.querySelectorAll('.follow-form').forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const button = form.querySelector('button');
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_following) {
+                button.textContent = '팔로잉';
+                button.classList.remove('follow-btn');
+                button.classList.add('following-btn');
+            } else {
+                button.textContent = '팔로우';
+                button.classList.remove('following-btn');
+                button.classList.add('follow-btn');
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
