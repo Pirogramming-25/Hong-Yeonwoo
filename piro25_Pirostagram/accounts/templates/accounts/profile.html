@@ -1,0 +1,473 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ profile_user.username }} 프로필</title>
+    <link rel="stylesheet" href="{% static 'accounts/profile.css' %}">
+</head>
+<body>
+<div class="profile-layout">
+    <aside class="sidebar">
+        <h1 class="logo">Pirostagram</h1>
+
+        <nav class="menu">
+            <a href="/" class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
+                    <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                <span>홈</span>
+            </a>
+
+            <form class="search-box" action="{% url 'posts:post_search' %}" method="get">
+                <div class="menu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21 21-4.34-4.34"/>
+                        <circle cx="11" cy="11" r="8"/>
+                    </svg>
+                    <span>게시글 검색</span>
+                </div>
+                <input type="text" name="q">
+                <button type="submit">검색</button>
+            </form>
+
+            <form class="search-box" action="{% url 'accounts:user_search' %}" method="get">
+                <span>유저 검색</span>
+                <input type="text" name="q">
+                <button type="submit">검색</button>
+            </form>
+
+            <a href="#" class="menu-item post-create-open">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <path d="M8 12h8"/>
+                    <path d="M12 8v8"/>
+                </svg>
+                <span>게시물 만들기</span>
+            </a>
+            <a href="{% url 'accounts:profile' request.user.username %}" class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="5"/>
+                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                </svg>
+                <span>프로필</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="profile-main">
+        <section class="profile-header">
+            <div class="profile-image-wrap">
+                <div class="profile-image-inner">
+                    {% if profile_user.profile.image %}
+                        <img src="{{ profile_user.profile.image.url }}" alt="">
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="profile-title">
+                    <h2>{{ profile_user.username }}</h2>
+
+                    {% if is_me %}
+                        <button class="edit-profile-btn">프로필 수정하기</button>
+                    {% else %}
+                        <form action="{% url 'accounts:toggle_follow' profile_user.username %}" method="post">
+                            {% csrf_token %}
+                            {% if is_following %}
+                                <button type="submit" class="following-btn">팔로잉</button>
+                            {% else %}
+                                <button type="submit" class="follow-btn">팔로우</button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="profile-stats">
+                    <span>게시물 <strong>{{ post_count }}</strong></span>
+                    <span>팔로워 <strong>{{ follower_count }}</strong></span>
+                    <span>팔로우 <strong>{{ following_count }}</strong></span>
+                </div>
+
+                <p class="bio">
+                    {% if profile_user.profile.bio %}
+                        {{ profile_user.profile.bio }}
+                    {% else %}
+                        소개글이 없습니다.
+                    {% endif %}
+                </p>
+            </div>
+        </section>
+
+        <section class="profile-posts">
+            {% for post in posts %}
+                <div class="profile-post-card profile-post-open"
+                    data-post-like-url="{% url 'posts:toggle_like' post.id %}"
+                    data-post-comment-url="{% url 'posts:create_comment' post.id %}"
+                    data-post-is-liked="{% if post.id in liked_post_ids %}true{% else %}false{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    data-post-image="{{ post.image.url }}"
+                    data-post-author="{{ post.author.username }}"
+                    data-post-author-image="{% if post.author.profile.image %}{{ post.author.profile.image.url }}{% endif %}"
+                    data-post-content="{{ post.content }}"
+                    data-post-like-count="{{ post.likes.count }}"
+                    data-post-comment-count="{{ post.comments.count }}"
+                    data-post-edit-url="{% url 'posts:edit_post' post.id %}"
+                    data-post-delete-url="{% url 'posts:delete_post' post.id %}"
+                    data-post-is-mine="{% if post.author == request.user %}true{% else %}false{% endif %}">
+                    <img src="{{ post.image.url }}" alt="">
+
+                    <div class="profile-post-comments-template">
+                        {% for comment in post.comments.all %}
+                            <div class="modal-comment-item">
+                                <div class="modal-comment-view">
+                                    <p class="modal-comment-text">
+                                        <strong>{{ comment.author.username }}</strong>
+                                        <span>{{ comment.content }}</span>
+                                    </p>
+
+                                    {% if comment.author == request.user %}
+                                        <div class="modal-comment-actions">
+                                            <button type="button" class="modal-comment-edit-toggle">수정</button>
+
+                                            <form action="{% url 'posts:delete_comment' comment.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="modal-comment-delete-btn">삭제</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if comment.author == request.user %}
+                                    <form action="{% url 'posts:edit_comment' comment.id %}" method="post" class="modal-comment-edit-form">
+                                        {% csrf_token %}
+                                        <input type="text" name="content" value="{{ comment.content }}">
+                                        <button type="submit">저장</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                {% if is_me %}
+                    <div class="empty-posts">
+                        <p>아직 게시물이 없습니다!</p>
+                        <p>나만의 게시글을 만들어보세요!</p>
+                    </div>
+                {% else %}
+                    <p class="empty-posts">게시물이 없습니다.</p>
+                {% endif %}
+            {% endfor %}
+        </section>
+    </main>
+</div>
+
+<div class="profile-post-modal-overlay" id="profilePostModal">
+    <div class="profile-post-modal">
+        <button class="profile-post-close" type="button">×</button>
+
+        <div class="modal-post-header">
+            <img id="modalAuthorImage" src="" alt="">
+            <strong id="modalPostAuthor"></strong>
+        </div>
+
+        <img id="modalPostImage" class="modal-post-image" src="" alt="">
+
+        <div class="modal-post-actions">
+            <form id="modalLikeForm" method="post">
+                {% csrf_token %}
+                <button class="icon-button modal-like-button" type="submit">
+                    <svg class="heart-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
+                    </svg>
+                </button>
+            </form>
+
+                <button class="icon-button" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+                    </svg>
+                </button>
+
+            <div class="modal-owner-actions" id="modalOwnerActions">
+                <button type="button" class="modal-edit-btn" id="modalEditOpen">수정</button>
+
+                <form id="modalDeleteForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="modal-delete-btn">삭제</button>
+                </form>
+            </div>
+        </div>
+
+        <p>좋아요 <span id="modalLikeCount"></span>개</p>
+        <p><strong id="modalCaptionAuthor"></strong> <span id="modalPostContent"></span></p>
+        <p>댓글 <span id="modalCommentCount"></span>개 모두 보기</p>
+
+        <div id="modalCommentList" class="modal-comment-list"></div>
+
+        <form id="modalCommentForm" method="post">
+            {% csrf_token %}
+            <input class="modal-comment-input" type="text" name="content" placeholder="댓글 달기...">
+        </form>
+    </div>
+</div>
+
+
+<div class="post-edit-overlay" id="postEditModal">
+    <div class="post-edit-modal">
+        <button class="post-edit-close" type="button">×</button>
+
+        <h2>게시글 수정하기</h2>
+
+        <form id="postEditForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label class="post-edit-upload">
+                + 이미지 변경
+                <input type="file" name="image" accept="image/*">
+            </label>
+
+            <label class="post-edit-label">내용</label>
+            <textarea id="postEditContent" name="content"></textarea>
+
+            <div class="post-edit-actions">
+                <button type="button" class="post-edit-cancel">취소</button>
+                <button type="submit" class="post-edit-submit">수정하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="post-create-overlay" id="postCreateModal">
+    <div class="post-create-modal">
+        <button class="post-create-close" type="button">×</button>
+
+        <h2>게시글 만들기</h2>
+
+        <form action="{% url 'posts:create_post' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label class="post-upload-box">
+                + 이미지 선택
+                <input type="file" name="image" accept="image/*" required>
+            </label>
+
+            <p id="postFileName" class="post-file-name">선택된 이미지가 없습니다.</p>
+
+            <label class="post-content-label">내용</label>
+            <textarea name="content" placeholder="오늘의 사진을 입력하세요..."></textarea>
+
+            <div class="post-create-actions">
+                <button type="button" class="post-cancel-btn">취소</button>
+                <button type="submit" class="post-submit-btn">작성하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const profilePostModal = document.getElementById('profilePostModal');
+const profilePostClose = document.querySelector('.profile-post-close');
+
+const modalPostImage = document.getElementById('modalPostImage');
+const modalPostAuthor = document.getElementById('modalPostAuthor');
+const modalAuthorImage = document.getElementById('modalAuthorImage');
+const modalCaptionAuthor = document.getElementById('modalCaptionAuthor');
+const modalPostContent = document.getElementById('modalPostContent');
+const modalLikeCount = document.getElementById('modalLikeCount');
+const modalCommentCount = document.getElementById('modalCommentCount');
+const modalCommentList = document.getElementById('modalCommentList');
+const modalOwnerActions = document.getElementById('modalOwnerActions');
+const modalDeleteForm = document.getElementById('modalDeleteForm');
+
+const postEditModal = document.getElementById('postEditModal');
+const modalEditOpen = document.getElementById('modalEditOpen');
+const postEditForm = document.getElementById('postEditForm');
+const postEditContent = document.getElementById('postEditContent');
+const postEditClose = document.querySelector('.post-edit-close');
+const postEditCancel = document.querySelector('.post-edit-cancel');
+
+const modalLikeForm = document.getElementById('modalLikeForm');
+const modalLikeButton = document.querySelector('.modal-like-button');
+const modalCommentForm = document.getElementById('modalCommentForm');
+
+const postCreateModal = document.getElementById('postCreateModal');
+const postCreateOpen = document.querySelector('.post-create-open');
+const postCreateClose = document.querySelector('.post-create-close');
+const postCancelBtn = document.querySelector('.post-cancel-btn');
+const postFileInput = document.querySelector('.post-upload-box input');
+const postFileName = document.getElementById('postFileName');
+
+document.querySelectorAll('.profile-post-open').forEach(function(card) {
+    card.addEventListener('click', function() {
+        modalPostImage.src = card.dataset.postImage;
+        modalAuthorImage.src = card.dataset.postAuthorImage;
+        modalPostAuthor.textContent = card.dataset.postAuthor;
+        modalCaptionAuthor.textContent = card.dataset.postAuthor;
+        modalPostContent.textContent = card.dataset.postContent;
+        modalLikeCount.textContent = card.dataset.postLikeCount;
+        modalCommentCount.textContent = card.dataset.postCommentCount;
+
+        const commentTemplate = card.querySelector('.profile-post-comments-template');
+        modalCommentList.innerHTML = commentTemplate ? commentTemplate.innerHTML : '';
+
+        modalDeleteForm.action = card.dataset.postDeleteUrl;
+        postEditForm.action = card.dataset.postEditUrl;
+        postEditContent.value = card.dataset.postContent;
+
+        modalLikeForm.action = card.dataset.postLikeUrl;
+        modalCommentForm.action = card.dataset.postCommentUrl;
+
+        if (card.dataset.postIsLiked === 'true') {
+            modalLikeButton.classList.add('liked');
+        } else {
+            modalLikeButton.classList.remove('liked');
+        }
+
+        if (card.dataset.postIsMine === 'true') {
+            modalOwnerActions.style.display = 'flex';
+        } else {
+            modalOwnerActions.style.display = 'none';
+        }
+
+        profilePostModal.classList.add('active');
+    });
+});
+
+profilePostClose.addEventListener('click', function() {
+    profilePostModal.classList.remove('active');
+});
+
+profilePostModal.addEventListener('click', function(event) {
+    if (event.target === profilePostModal) {
+        profilePostModal.classList.remove('active');
+    }
+});
+
+modalEditOpen.addEventListener('click', function() {
+    profilePostModal.classList.remove('active');
+    postEditModal.classList.add('active');
+});
+
+postEditClose.addEventListener('click', function() {
+    postEditModal.classList.remove('active');
+});
+
+postEditCancel.addEventListener('click', function() {
+    postEditModal.classList.remove('active');
+});
+
+postEditModal.addEventListener('click', function(event) {
+    if (event.target === postEditModal) {
+        postEditModal.classList.remove('active');
+    }
+});
+
+modalLikeForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(modalLikeForm);
+
+    fetch(modalLikeForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        modalLikeCount.textContent = data.like_count;
+
+        if (data.is_liked) {
+            modalLikeButton.classList.add('liked');
+        } else {
+            modalLikeButton.classList.remove('liked');
+        }
+    });
+});
+
+modalCommentForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const input = modalCommentForm.querySelector('.modal-comment-input');
+    const content = input.value.trim();
+
+    if (!content) {
+        return;
+    }
+
+    const formData = new FormData(modalCommentForm);
+
+    fetch(modalCommentForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        }
+    });
+});
+
+modalCommentList.addEventListener('click', function(event) {
+    if (!event.target.classList.contains('modal-comment-edit-toggle')) {
+        return;
+    }
+
+    const commentItem = event.target.closest('.modal-comment-item');
+    const editForm = commentItem.querySelector('.modal-comment-edit-form');
+
+    editForm.classList.toggle('active');
+});
+
+postCreateOpen.addEventListener('click', function(event) {
+    event.preventDefault();
+    postCreateModal.classList.add('active');
+});
+
+postCreateClose.addEventListener('click', function() {
+    postCreateModal.classList.remove('active');
+});
+
+postCancelBtn.addEventListener('click', function() {
+    postCreateModal.classList.remove('active');
+});
+
+postCreateModal.addEventListener('click', function(event) {
+    if (event.target === postCreateModal) {
+        postCreateModal.classList.remove('active');
+    }
+});
+
+postFileInput.addEventListener('change', function() {
+    if (postFileInput.files.length > 0) {
+        postFileName.textContent = postFileInput.files[0].name;
+    } else {
+        postFileName.textContent = '선택된 이미지가 없습니다.';
+    }
+});
+
+</script>
+
+</body>
+</html>
