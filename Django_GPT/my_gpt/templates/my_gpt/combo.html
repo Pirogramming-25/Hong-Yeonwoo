@@ -1,0 +1,24 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>복합 분석</title>
+    <link rel="stylesheet" href="{% static 'my_gpt/css/style.css' %}">
+</head>
+<body>
+    <nav class="tab-nav">
+        <a class="nav-link" href="/sentiment/">감정 분석</a>
+        <span class="nav-separator">|</span>
+        <a class="nav-link" href="/summarize/">문서 요약</a>
+        <span class="nav-separator">|</span>
+        <a class="nav-link" href="/moderate/">유해 표현 분석</a>
+        <span class="nav-separator">|</span>
+        <a class="nav-link active" href="/combo/">복합 분석</a>
+    </nav>
+
+    <h1>복합 분석</h1>
+    <p>로그인 사용자만 접근할 수 있는 페이지입니다.</p>
+</body>
+</html>
