@@ -6,6 +6,7 @@
     <meta charset="utf-8">
     <title>문서 요약</title>
     <link rel="stylesheet" href="{% static 'my_gpt/css/style.css' %}">
+    <script src="{% static 'my_gpt/js/summarize.js' %}" defer></script>
 </head>
 <body>
     <nav class="tab-nav">
@@ -19,6 +20,45 @@
     </nav>
 
     <h1>문서 요약</h1>
-    <p>로그인 사용자만 접근할 수 있는 페이지입니다.</p>
+    <p>긴 영어 문서를 입력받아 요약 결과를 생성합니다.</p>
+
+    <section class="model-info">
+        <p><strong>사용 모델:</strong> sshleifer/distilbart-cnn-6-6</p>
+        <p><strong>입력 언어:</strong> 영어</p>
+    </section>
+
+    <form id="summarize-form" method="post" novalidate>
+        {% csrf_token %}
+        <textarea
+            id="text"
+            name="text"
+            maxlength="5000"
+            placeholder="100자 이상의 영어 문서를 입력하세요."
+        ></textarea>
+
+        <div>
+            <button type="submit">요약하기</button>
+        </div>
+    </form>
+
+    <section id="result" class="result"></section>
+
+    <section class="history-section">
+        <h2>최근 실행 기록</h2>
+
+        {% if histories %}
+            <ol class="history-list">
+                {% for history in histories %}
+                    <li>
+                        <span class="history-input">{{ history.input_text|truncatechars:60 }}</span>
+                        <span class="history-arrow">→</span>
+                        <strong>{{ history.output_text|truncatechars:80 }}</strong>
+                    </li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p>최근 실행 기록이 없습니다.</p>
+        {% endif %}
+    </section>
 </body>
 </html>
