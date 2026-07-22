@@ -6,19 +6,74 @@
     <meta charset="utf-8">
     <title>복합 분석</title>
     <link rel="stylesheet" href="{% static 'my_gpt/css/style.css' %}">
+    <script src="{% static 'my_gpt/js/combo.js' %}" defer></script>
 </head>
 <body>
     <nav class="tab-nav">
-        <a class="nav-link" href="/sentiment/">감정 분석</a>
-        <span class="nav-separator">|</span>
-        <a class="nav-link" href="/summarize/">문서 요약</a>
-        <span class="nav-separator">|</span>
-        <a class="nav-link" href="/moderate/">유해 표현 분석</a>
-        <span class="nav-separator">|</span>
-        <a class="nav-link active" href="/combo/">복합 분석</a>
+        <div class="tab-links">
+            <a class="nav-link" href="/sentiment/">감정 분석</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link" href="/summarize/">문서 요약</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link" href="/moderate/">유해 표현 분석</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link active" href="/combo/">복합 분석</a>
+        </div>
+
+        <div class="auth-menu">
+            {% if request.user.is_authenticated %}
+                <span>{{ request.user.username }}님</span>
+                <form method="post" action="/accounts/logout/" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">로그아웃</button>
+                </form>
+            {% else %}
+                <a class="nav-link" href="/accounts/login/">로그인</a>
+            {% endif %}
+        </div>
     </nav>
 
     <h1>복합 분석</h1>
-    <p>로그인 사용자만 접근할 수 있는 페이지입니다.</p>
+    <p>영어 고객 리뷰 또는 고객 피드백을 요약한 뒤, 요약문을 기준으로 감정과 유해 표현을 분석합니다.</p>
+
+    <section class="model-info">
+        <p><strong>연결 구조:</strong> 요약 → 감정 분석 → 유해 표현 분석</p>
+        <p><strong>입력 언어:</strong> 영어</p>
+    </section>
+
+    <form id="combo-form" method="post" novalidate>
+        {% csrf_token %}
+        <textarea
+            id="text"
+            name="text"
+            maxlength="5000"
+            placeholder="200자 이상의 영어 고객 리뷰 또는 피드백을 입력하세요."
+        ></textarea>
+
+        <div>
+            <button type="submit">복합 분석하기</button>
+            <button id="regenerate-button" type="button" disabled>재생성</button>
+        </div>
+    </form>
+
+    <section id="result" class="result"></section>
+
+    <section class="history-section">
+        <h2>최근 실행 기록</h2>
+
+        {% if histories %}
+            <ol class="history-list">
+                {% for history in histories %}
+                    <li>
+                        <span class="history-input">{{ history.input_text|truncatechars:60 }}</span>
+                        <span class="history-arrow">→</span>
+                        <strong>{{ history.output_text|truncatechars:80 }}</strong>
+                    </li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p>최근 실행 기록이 없습니다.</p>
+        {% endif %}
+    </section>
 </body>
 </html>

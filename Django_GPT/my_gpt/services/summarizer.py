@@ -30,7 +30,15 @@ def get_summarizer_pipeline():
     return pipeline(**kwargs)
 
 
-def summarize_text(text):
+def summarize_text(
+    text,
+    *,
+    max_length=160,
+    min_length=30,
+    do_sample=False,
+    top_p=None,
+    temperature=None,
+):
     text = text.strip()
 
     if len(text) < 100:
@@ -39,13 +47,20 @@ def summarize_text(text):
     if len(text) > 5000:
         raise ValueError("문서는 5,000자 이하로 입력해주세요.")
 
+    generate_kwargs = {
+        "max_length": max_length,
+        "min_length": min_length,
+        "do_sample": do_sample,
+    }
+
+    if top_p is not None:
+        generate_kwargs["top_p"] = top_p
+
+    if temperature is not None:
+        generate_kwargs["temperature"] = temperature
+
     summarizer = get_summarizer_pipeline()
-    result = summarizer(
-        text,
-        max_length=160,
-        min_length=30,
-        do_sample=False,
-    )
+    result = summarizer(text, **generate_kwargs)
 
     summary = result[0]["summary_text"].strip()
     original_length = len(text)
@@ -59,4 +74,5 @@ def summarize_text(text):
         "summary_ratio": summary_ratio,
         "model_name": SUMMARIZER_MODEL_ID,
         "raw_result": result,
+        "generation_options": generate_kwargs,
     }

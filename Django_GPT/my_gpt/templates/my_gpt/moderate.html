@@ -10,13 +10,27 @@
 </head>
 <body>
     <nav class="tab-nav">
-        <a class="nav-link" href="/sentiment/">감정 분석</a>
-        <span class="nav-separator">|</span>
-        <a class="nav-link" href="/summarize/">문서 요약</a>
-        <span class="nav-separator">|</span>
-        <a class="nav-link active" href="/moderate/">유해 표현 분석</a>
-        <span class="nav-separator">|</span>
-        <a class="nav-link" href="/combo/">복합 분석</a>
+        <div class="tab-links">
+            <a class="nav-link" href="/sentiment/">감정 분석</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link" href="/summarize/">문서 요약</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link active" href="/moderate/">유해 표현 분석</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link" href="/combo/">복합 분석</a>
+        </div>
+
+        <div class="auth-menu">
+            {% if request.user.is_authenticated %}
+                <span>{{ request.user.username }}님</span>
+                <form method="post" action="/accounts/logout/" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">로그아웃</button>
+                </form>
+            {% else %}
+                <a class="nav-link" href="/accounts/login/">로그인</a>
+            {% endif %}
+        </div>
     </nav>
 
     <h1>유해 표현 분석</h1>

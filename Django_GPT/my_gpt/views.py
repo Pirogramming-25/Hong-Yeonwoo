@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from .decorators import model_login_required
 from .models import AIExecutionLog
+from .services.combo import analyze_customer_feedback
 from .services.moderator import analyze_toxicity
 from .services.sentiment import analyze_sentiment
 from .services.summarizer import summarize_text
@@ -27,13 +28,7 @@ def sentiment_page(request):
             )[:5]
         )
 
-    return render(
-        request,
-        "my_gpt/sentiment.html",
-        {
-            "histories": histories,
-        },
-    )
+    return render(request, "my_gpt/sentiment.html", {"histories": histories})
 
 
 @ensure_csrf_cookie
@@ -41,19 +36,10 @@ def sentiment_page(request):
 def summarize_page(request):
     histories = (
         AIExecutionLog.objects
-        .filter(
-            user=request.user,
-            feature=AIExecutionLog.Feature.SUMMARIZE,
-        )[:5]
+        .filter(user=request.user, feature=AIExecutionLog.Feature.SUMMARIZE)[:5]
     )
 
-    return render(
-        request,
-        "my_gpt/summarize.html",
-        {
-            "histories": histories,
-        },
-    )
+    return render(request, "my_gpt/summarize.html", {"histories": histories})
 
 
 @ensure_csrf_cookie
@@ -61,24 +47,21 @@ def summarize_page(request):
 def moderate_page(request):
     histories = (
         AIExecutionLog.objects
-        .filter(
-            user=request.user,
-            feature=AIExecutionLog.Feature.MODERATE,
-        )[:5]
+        .filter(user=request.user, feature=AIExecutionLog.Feature.MODERATE)[:5]
     )
 
-    return render(
-        request,
-        "my_gpt/moderate.html",
-        {
-            "histories": histories,
-        },
-    )
+    return render(request, "my_gpt/moderate.html", {"histories": histories})
 
 
+@ensure_csrf_cookie
 @model_login_required
 def combo_page(request):
-    return render(request, "my_gpt/combo.html")
+    histories = (
+        AIExecutionLog.objects
+        .filter(user=request.user, feature=AIExecutionLog.Feature.COMBO)[:5]
+    )
+
+    return render(request, "my_gpt/combo.html", {"histories": histories})
 
 
 @require_POST
@@ -105,10 +88,7 @@ def sentiment_api(request):
                 "label": result["label"],
                 "confidence": round(result["confidence"] * 100, 2),
                 "scores": [
-                    {
-                        "label": item["label"],
-                        "score": round(item["score"] * 100, 2),
-                    }
+                    {"label": item["label"], "score": round(item["score"] * 100, 2)}
                     for item in result["scores"]
                 ],
                 "saved": request.user.is_authenticated,
@@ -116,13 +96,7 @@ def sentiment_api(request):
         )
 
     except ValueError as error:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": str(error),
-            },
-            status=400,
-        )
+        return JsonResponse({"ok": False, "error": str(error)}, status=400)
 
     except Exception:
         logger.exception("Sentiment analysis failed")
@@ -169,13 +143,7 @@ def summarize_api(request):
         )
 
     except ValueError as error:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": str(error),
-            },
-            status=400,
-        )
+        return JsonResponse({"ok": False, "error": str(error)}, status=400)
 
     except Exception:
         logger.exception("Summarization failed")
@@ -212,10 +180,7 @@ def moderate_api(request):
                 "label": result["label"],
                 "score": round(result["score"] * 100, 2),
                 "scores": [
-                    {
-                        "label": item["label"],
-                        "score": round(item["score"] * 100, 2),
-                    }
+                    {"label": item["label"], "score": round(item["score"] * 100, 2)}
                     for item in result["scores"]
                 ],
                 "saved": True,
@@ -223,16 +188,74 @@ def moderate_api(request):
         )
 
     except ValueError as error:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": str(error),
-            },
-            status=400,
-        )
+        return JsonResponse({"ok": False, "error": str(error)}, status=400)
 
     except Exception:
         logger.exception("Moderation failed")
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "모델 실행에 실패했습니다. 잠시 후 다시 시도해주세요.",
+            },
+            status=500,
+        )
+
+
+@require_POST
+@model_login_required
+def combo_api(request):
+    text = request.POST.get("text", "")
+
+    try:
+        result = analyze_customer_feedback(text)
+        sentiment = result["sentiment"]
+        toxicity = result["toxicity"]
+        summary = result["summary"]
+
+        AIExecutionLog.objects.create(
+            user=request.user,
+            feature=AIExecutionLog.Feature.COMBO,
+            model_name=result["model_name"],
+            input_text=text.strip(),
+            output_text=result["judgement"],
+            raw_result={
+                "summary": summary,
+                "sentiment": sentiment,
+                "toxicity": toxicity,
+                "judgement": result["judgement"],
+            },
+        )
+
+        return JsonResponse(
+            {
+                "ok": True,
+                "input_text": result["input_text"],
+                "summary": summary["summary"],
+                "sentiment": {
+                    "label": sentiment["label"],
+                    "confidence": round(sentiment["confidence"] * 100, 2),
+                },
+                "toxicity": {
+                    "label": toxicity["label"],
+                    "score": round(toxicity["score"] * 100, 2),
+                    "scores": [
+                        {
+                            "label": item["label"],
+                            "score": round(item["score"] * 100, 2),
+                        }
+                        for item in toxicity["scores"]
+                    ],
+                },
+                "judgement": result["judgement"],
+                "saved": True,
+            }
+        )
+
+    except ValueError as error:
+        return JsonResponse({"ok": False, "error": str(error)}, status=400)
+
+    except Exception:
+        logger.exception("Combo analysis failed")
         return JsonResponse(
             {
                 "ok": False,

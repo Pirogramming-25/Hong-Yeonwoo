@@ -7,7 +7,18 @@ body {
 }
 
 .tab-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     margin-bottom: 24px;
+}
+
+.tab-links,
+.auth-menu {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .nav-link {
@@ -23,6 +34,29 @@ body {
 .nav-separator {
     margin: 0 8px;
     color: #6b7280;
+}
+
+.auth-menu {
+    gap: 8px;
+}
+
+.logout-form {
+    display: inline;
+}
+
+.link-button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #2563eb;
+    font: inherit;
+    cursor: pointer;
+}
+
+.link-button:hover,
+.nav-link:hover {
+    text-decoration: underline;
 }
 
 textarea {
