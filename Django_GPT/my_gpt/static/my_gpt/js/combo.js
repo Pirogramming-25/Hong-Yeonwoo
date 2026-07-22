@@ -13,7 +13,7 @@ function setLoading(isLoading) {
     submitButton.textContent = isLoading ? "처리 중..." : "복합 분석하기";
 }
 
-async function runComboAnalysis(inputText) {
+async function runComboAnalysis(inputText, loadingMessage = "처리 중...") {
     resultBox.style.display = "block";
 
     if (inputText.length < 200) {
@@ -30,7 +30,7 @@ async function runComboAnalysis(inputText) {
     formData.set("text", inputText);
 
     setLoading(true);
-    resultBox.textContent = "처리 중...";
+    resultBox.textContent = loadingMessage;
 
     try {
         const response = await fetch("/api/combo/", {
@@ -74,7 +74,7 @@ async function runComboAnalysis(inputText) {
 
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
-    await runComboAnalysis(textInput.value.trim());
+    await runComboAnalysis(textInput.value.trim(), "처리 중...");
 });
 
 regenerateButton.addEventListener("click", async function () {
@@ -82,5 +82,5 @@ regenerateButton.addEventListener("click", async function () {
         return;
     }
 
-    await runComboAnalysis(lastInputText);
+    await runComboAnalysis(lastInputText, "재생성 중...");
 });
