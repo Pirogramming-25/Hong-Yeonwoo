@@ -1,0 +1,78 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>문서 요약</title>
+    <link rel="stylesheet" href="{% static 'my_gpt/css/style.css' %}">
+    <script src="{% static 'my_gpt/js/summarize.js' %}" defer></script>
+</head>
+<body>
+    <nav class="tab-nav">
+        <div class="tab-links">
+            <a class="nav-link" href="/sentiment/">감정 분석</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link active" href="/summarize/">문서 요약</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link" href="/moderate/">유해 표현 분석</a>
+            <span class="nav-separator">|</span>
+            <a class="nav-link" href="/combo/">복합 분석</a>
+        </div>
+
+        <div class="auth-menu">
+            {% if request.user.is_authenticated %}
+                <span>{{ request.user.username }}님</span>
+                <form method="post" action="/accounts/logout/" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">로그아웃</button>
+                </form>
+            {% else %}
+                <a class="nav-link" href="/accounts/login/">로그인</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <h1>문서 요약</h1>
+    <p>긴 영어 문서를 입력받아 요약 결과를 생성합니다.</p>
+
+    <section class="model-info">
+        <p><strong>사용 모델:</strong> sshleifer/distilbart-cnn-6-6</p>
+        <p><strong>입력 언어:</strong> 영어</p>
+    </section>
+
+    <form id="summarize-form" method="post" novalidate>
+        {% csrf_token %}
+        <textarea
+            id="text"
+            name="text"
+            maxlength="5000"
+            placeholder="100자 이상의 영어 문서를 입력하세요."
+        ></textarea>
+
+        <div>
+            <button type="submit">요약하기</button>
+        </div>
+    </form>
+
+    <section id="result" class="result"></section>
+
+    <section class="history-section">
+        <h2>최근 실행 기록</h2>
+
+        {% if histories %}
+            <ol class="history-list">
+                {% for history in histories %}
+                    <li>
+                        <span class="history-input">{{ history.input_text|truncatechars:60 }}</span>
+                        <span class="history-arrow">→</span>
+                        <strong>{{ history.output_text|truncatechars:80 }}</strong>
+                    </li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p>최근 실행 기록이 없습니다.</p>
+        {% endif %}
+    </section>
+</body>
+</html>
